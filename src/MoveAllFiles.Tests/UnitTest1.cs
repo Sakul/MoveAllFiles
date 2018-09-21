@@ -2,12 +2,15 @@ using FluentAssertions;
 using MoveAllFiles.App;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using Xunit;
 
 namespace MoveAllFiles.Tests
 {
     public class UnitTest1
     {
+        private const string RootDirectoryPath = @"c:\";
+
         [Fact(DisplayName = "System can list all directory paths.")]
         public void SystemCanListAllDirectoryPathsCorrectly()
         {
@@ -19,7 +22,7 @@ namespace MoveAllFiles.Tests
             fileSyste.AddFile(@"c:\b\b1\b12\aQuery.js", new MockFileData("Some jquery"));
 
             var sut = new MoveAllFilesLogic(fileSyste);
-            var actual = sut.GetAllDirectoryPaths(@"c:\");
+            var actual = sut.GetAllDirectoryPaths(RootDirectoryPath);
             var expectedDirectories = new List<string>
             {
                 @"c:\a\",
@@ -38,7 +41,6 @@ namespace MoveAllFiles.Tests
             fileSyste.AddFile(@"c:\a\aQuery.js", new MockFileData("Some jquery"));
             fileSyste.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
 
-            const string RootDirectoryPath = @"c:\";
             var sut = new MoveAllFilesLogic(fileSyste);
             sut.RootDirectoryPath = RootDirectoryPath;
             sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\a\");
@@ -66,7 +68,6 @@ namespace MoveAllFiles.Tests
             fileSyste.AddFile(@"c:\b\aText.txt", new MockFileData("Some text."));
             fileSyste.AddFile(@"c:\b\b1\aText.txt", new MockFileData("Some text."));
 
-            const string RootDirectoryPath = @"c:\";
             var sut = new MoveAllFilesLogic(fileSyste);
             sut.RootDirectoryPath = RootDirectoryPath;
             sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\a\");
@@ -87,6 +88,40 @@ namespace MoveAllFiles.Tests
             sut.GetAllFilePaths(RootDirectoryPath)
                 .Should()
                 .BeEquivalentTo(expectedFilePaths, "All files must be here.");
+        }
+
+        [Theory(DisplayName = "System should move all out of whitelist files into temp directory.")]
+        [InlineData]
+        [InlineData(".txt")]
+        [InlineData(".mp4")]
+        [InlineData(".mp4", ".wmv")]
+        public void SystemMoveAllOutOfWhitelistFilesToTempDirectory(params string[] whitelistExtensions)
+        {
+            var fileSyste = new MockFileSystem();
+            fileSyste.AddFile(@"c:\firstText.txt", new MockFileData("Some text."));
+            foreach (var extension in whitelistExtensions)
+                fileSyste.AddFile($"c:\\somefile{extension}", new MockFileData(new byte[] { 0x12 }));
+
+            var allFilePaths = fileSyste.Directory.GetFiles(RootDirectoryPath).ToList();
+
+            var sut = new MoveAllFilesLogic(fileSyste);
+            sut.RootDirectoryPath = RootDirectoryPath;
+            sut.WhitelistExtensionNames = whitelistExtensions;
+            sut.MoveOutOfWhitelistFilesToTempFolder(RootDirectoryPath);
+
+            var expectedWhitelistFilePaths = allFilePaths
+                .Where(it => whitelistExtensions.Any(e => it.Contains(e)));
+            sut.GetAllFilePaths(RootDirectoryPath)
+                .Should()
+                .BeEquivalentTo(expectedWhitelistFilePaths, "All whitelist files must be here.");
+
+            var tempDirectoryPath = $"{RootDirectoryPath}temp\\";
+            var expectedOutOfWhitelistFilePaths = allFilePaths
+                .Where(it => !whitelistExtensions.Any(e => it.Contains(e)))
+                .Select(it => it.Replace(RootDirectoryPath, tempDirectoryPath));
+            sut.GetAllFilePaths(tempDirectoryPath)
+                .Should()
+                .BeEquivalentTo(expectedOutOfWhitelistFilePaths, "All out of whitelist files must be here.");
         }
     }
 }

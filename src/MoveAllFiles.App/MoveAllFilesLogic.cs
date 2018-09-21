@@ -14,7 +14,7 @@ namespace MoveAllFiles.App
         private readonly IFileSystem fileSystem;
 
         public string RootDirectoryPath { get; internal set; }
-        public IEnumerable<string> WhitelistExtensionNames { get; set; }
+        public IEnumerable<string> WhitelistExtensionNames { get; set; } = Enumerable.Empty<string>();
 
         public MoveAllFilesLogic(IFileSystem fileSystem) => this.fileSystem = fileSystem;
 
@@ -46,17 +46,36 @@ namespace MoveAllFiles.App
 
         internal void MoveAllFilesToRootDirectoryAndDeleteIt(string workingDirectoryPath)
         {
-            var filePaths = fileSystem.Directory.GetFiles(workingDirectoryPath);
-            foreach (var path in filePaths)
-            {
-                var fileInfo = fileSystem.FileInfo.FromFileName(path);
-                var destinationPath = $"{RootDirectoryPath}{fileInfo.Name}";
-                var isFileExisting = fileSystem.File.Exists(destinationPath);
-                if (isFileExisting) destinationPath = $"{RootDirectoryPath}{createNewFileName(fileInfo.Name, fileInfo.Extension)}";
-                fileSystem.File.Move(path, destinationPath);
-            }
-
+            fileSystem.Directory.GetFiles(workingDirectoryPath)
+                .ToList()
+                .ForEach(it => moveFile(it, RootDirectoryPath));
             fileSystem.Directory.Delete(workingDirectoryPath);
+        }
+
+        internal void MoveOutOfWhitelistFilesToTempFolder(string directoryPath)
+        {
+            var allFilePathQry = fileSystem.Directory.GetFiles(directoryPath)
+                .Select(it => new { fileSystem.FileInfo.FromFileName(it).Extension, Path = it });
+            var outOfListFilePathQry = allFilePathQry.Where(it => !string.IsNullOrEmpty(it.Extension))
+                .Where(it => !WhitelistExtensionNames.Contains(it.Extension));
+            var unknowExtensionFilePathQry = allFilePathQry.Where(it => string.IsNullOrEmpty(it.Extension));
+
+            const string TempDirectoryName = "temp";
+            var tempDirectoryPath = $"{RootDirectoryPath}{TempDirectoryName}\\";
+            fileSystem.Directory.CreateDirectory(tempDirectoryPath);
+
+            outOfListFilePathQry.Union(unknowExtensionFilePathQry)
+                .ToList()
+                .ForEach(it => moveFile(it.Path, tempDirectoryPath));
+        }
+
+        private void moveFile(string srcPath, string descPath)
+        {
+            var fileInfo = fileSystem.FileInfo.FromFileName(srcPath);
+            var destinationPath = $"{descPath}{fileInfo.Name}";
+            var isFileExisting = fileSystem.File.Exists(destinationPath);
+            if (isFileExisting) destinationPath = $"{descPath}{createNewFileName(fileInfo.Name, fileInfo.Extension)}";
+            fileSystem.File.Move(srcPath, destinationPath);
         }
 
         private string createNewFileName(string fullName, string extensionName)

@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MoveAllFiles.App\MoveAllFiles.App.csproj" />
+    <ProjectReference Include="..\MoveAllFiles\MoveAllFiles.csproj" />
   </ItemGroup>
 
 </Project>

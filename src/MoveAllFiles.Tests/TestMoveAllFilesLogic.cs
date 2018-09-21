@@ -1,5 +1,5 @@
 using FluentAssertions;
-using MoveAllFiles.App;
+using MoveAllFiles;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Xunit;

@@ -10,6 +10,7 @@ namespace MoveAllFiles.App
 {
     public class MoveAllFilesLogic
     {
+        private int _runningNo;
         private readonly IFileSystem fileSystem;
 
         public string RootDirectoryPath { get; internal set; }
@@ -40,7 +41,7 @@ namespace MoveAllFiles.App
             return paths;
         }
 
-        internal IEnumerable<string> GetAllFilePaths(string directoryPath) 
+        internal IEnumerable<string> GetAllFilePaths(string directoryPath)
             => fileSystem.Directory.GetFiles(directoryPath);
 
         internal void MoveAllFilesToRootDirectoryAndDeleteIt(string workingDirectoryPath)
@@ -50,13 +51,18 @@ namespace MoveAllFiles.App
             {
                 var fileInfo = fileSystem.FileInfo.FromFileName(path);
                 var destinationPath = $"{RootDirectoryPath}{fileInfo.Name}";
-                //var isFileExisting = fileSystem.File.Exists(destinationPath);
-                //if (isFileExisting) destinationPath = $"{RootDirectoryPath}{fileInfo.Name.Split(".", StringSplitOptions.RemoveEmptyEntries)[0]}{Guid.NewGuid().ToString().Split("-", StringSplitOptions.RemoveEmptyEntries)[0]}{fileInfo.Extension}";
+                var isFileExisting = fileSystem.File.Exists(destinationPath);
+                if (isFileExisting) destinationPath = $"{RootDirectoryPath}{createNewFileName(fileInfo.Name, fileInfo.Extension)}";
                 fileSystem.File.Move(path, destinationPath);
             }
-            
-fileSystem.Directory.Delete(workingDirectoryPath);
+
+            fileSystem.Directory.Delete(workingDirectoryPath);
         }
 
+        private string createNewFileName(string fullName, string extensionName)
+            => $"{getFileName(fullName)}{string.Format("{0:00}", ++_runningNo)}{extensionName}";
+
+        private string getFileName(string fullName)
+            => fullName.Split(".", StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
     }
 }

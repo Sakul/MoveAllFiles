@@ -1,5 +1,4 @@
 using FluentAssertions;
-using FluentAssertions.Collections;
 using MoveAllFiles.App;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
@@ -29,7 +28,7 @@ namespace MoveAllFiles.Tests
                 @"c:\b\b1\",
                 @"c:\b\b1\b12\"
             };
-            Assert.Equal(expectedDirectories, actual);
+            actual.Should().BeEquivalentTo(expectedDirectories, "The structure must like the mock.");
         }
 
         [Fact(DisplayName = "When we move files from a directory, System should delete that directory after that.")]
@@ -52,6 +51,38 @@ namespace MoveAllFiles.Tests
             {
                 @"c:\aQuery.js",
                 @"c:\aText.txt",
+            };
+            sut.GetAllFilePaths(RootDirectoryPath)
+                .Should()
+                .BeEquivalentTo(expectedFilePaths, "All files must be here.");
+        }
+
+        [Fact(DisplayName = "When we move files from a directory with existing file name, System should rename it.")]
+        public void MoveAllFilesToRootDirectoryWithExistringFileName()
+        {
+            var fileSyste = new MockFileSystem();
+            fileSyste.AddFile(@"c:\aText.txt", new MockFileData("Some text."));
+            fileSyste.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
+            fileSyste.AddFile(@"c:\b\aText.txt", new MockFileData("Some text."));
+            fileSyste.AddFile(@"c:\b\b1\aText.txt", new MockFileData("Some text."));
+
+            const string RootDirectoryPath = @"c:\";
+            var sut = new MoveAllFilesLogic(fileSyste);
+            sut.RootDirectoryPath = RootDirectoryPath;
+            sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\a\");
+            sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\b\b1");
+            sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\b\");
+
+            sut.GetAllDirectoryPaths(RootDirectoryPath)
+                .Should()
+                .BeEmpty("All directories must be deleted after we move their files.");
+
+            var expectedFilePaths = new[]
+            {
+                @"c:\aText.txt",
+                @"c:\aText01.txt",
+                @"c:\aText02.txt",
+                @"c:\aText03.txt",
             };
             sut.GetAllFilePaths(RootDirectoryPath)
                 .Should()

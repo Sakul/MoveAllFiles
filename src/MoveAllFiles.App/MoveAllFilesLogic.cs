@@ -21,11 +21,12 @@ namespace MoveAllFiles.App
         public void Begin(string rootDirectoryPath, IEnumerable<string> whitelistExtensionNames = null)
         {
             RootDirectoryPath = rootDirectoryPath;
-            WhitelistExtensionNames = whitelistExtensionNames ?? Enumerable.Empty<string>();
+            WhitelistExtensionNames = whitelistExtensionNames;
 
-            // Search for all directorie paths
-            // Move all files to the root directory then delete the dirctories
-            // Move out of whitelist files from root directory to the temp folder
+            GetAllDirectoryPaths(rootDirectoryPath)
+                .ToList()
+                .ForEach(path => MoveAllFilesToRootDirectoryAndDeleteIt(path));
+            MoveOutOfWhitelistFilesToTempFolder(rootDirectoryPath);
         }
 
         internal IEnumerable<string> GetAllDirectoryPaths(string directoryPath)

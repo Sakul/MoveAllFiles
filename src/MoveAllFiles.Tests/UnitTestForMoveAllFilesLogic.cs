@@ -7,7 +7,7 @@ using Xunit;
 
 namespace MoveAllFiles.Tests
 {
-    public class UnitTest1
+    public class UnitTestForMoveAllFilesLogic
     {
         private const string RootDirectoryPath = @"c:\";
 

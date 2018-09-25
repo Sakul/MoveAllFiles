@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -39,15 +40,17 @@ namespace MoveAllFiles
 
         public void Begin(string rootDirectoryPath, IEnumerable<string> whitelistExtensionNames = null)
         {
-            RootDirectoryPath = rootDirectoryPath;
+            RootDirectoryPath = GetRootDirectoryPath(rootDirectoryPath);
             WhitelistExtensionNames = whitelistExtensionNames;
-
-            GetAllDirectoryPaths(rootDirectoryPath)
+            GetAllDirectoryPaths(RootDirectoryPath)
                 .Reverse()
                 .ToList()
                 .ForEach(path => MoveAllFilesToRootDirectoryAndDeleteIt(path));
-            MoveOutOfWhitelistFilesToTempFolder(rootDirectoryPath);
+            MoveOutOfWhitelistFilesToTempFolder(RootDirectoryPath);
         }
+
+        internal string GetRootDirectoryPath(string rootDirectoryPath)
+            => rootDirectoryPath.EndsWith(@"\") ? rootDirectoryPath : $"{rootDirectoryPath}\\";
 
         internal IEnumerable<string> GetAllDirectoryPaths(string directoryPath)
         {
@@ -106,16 +109,10 @@ namespace MoveAllFiles
         }
 
         private string createNewFileName(string fullName, string extensionName)
-            => $"{getFileName(fullName)}{string.Format("{0:00}", ++_runningNo)}{extensionName}";
-
-        private string getFileName(string fullName)
-            => fullName.Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            => $"{Path.GetFileNameWithoutExtension(fullName)}{string.Format("{0:00}", ++_runningNo)}{extensionName}";
 
         private void writeLog(string message)
-        {
-            if (_log == null) return;
-            _log.WriteLog(message);
-        }
+            => _log?.WriteLog(message);
 
         #endregion Methods
     }

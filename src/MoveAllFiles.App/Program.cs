@@ -11,7 +11,6 @@ namespace MoveAllFiles.App
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(Environment.CurrentDirectory);
             var fileSystem = new FileSystem();
             var logic = new MoveAllFilesLogic(fileSystem, new ConsoleLog());
             logic.Begin(Environment.CurrentDirectory, new[]

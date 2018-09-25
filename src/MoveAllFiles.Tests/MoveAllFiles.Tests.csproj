@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <RootNamespace>MoveAllFiles</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MoveAllFiles\MoveAllFiles.csproj" />
+    <ProjectReference Include="..\MoveAllFiles.App\MoveAllFiles.App.csproj" />
   </ItemGroup>
 
 </Project>

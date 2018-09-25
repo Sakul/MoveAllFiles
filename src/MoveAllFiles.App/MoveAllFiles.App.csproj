@@ -34,9 +34,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.IO.Abstractions, Version=2.1.0.230, Culture=neutral, PublicKeyToken=96bf224d23c43e59, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Abstractions.2.1.0.230\lib\net40\System.IO.Abstractions.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleLog.cs" />
+    <Compile Include="FileSystem.cs" />
+    <Compile Include="IFileSystem.cs" />
     <Compile Include="ILog.cs" />
     <Compile Include="MoveAllFilesLogic.cs" />
     <Compile Include="App\Program.cs" />
@@ -53,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

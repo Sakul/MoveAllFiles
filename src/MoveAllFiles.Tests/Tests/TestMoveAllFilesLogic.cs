@@ -59,11 +59,12 @@ namespace MoveAllFiles.Tests
 
         private void validateMoveFiles(string workingDirectoryPath, string[] allFilePathsInSystem, string[] whitelistExtensions, string[] expectedWhitelistFilePaths, string[] expectedOutOfWhitelistFilePaths)
         {
-            var fileSyste = new MockFileSystem();
+            var mockFileSystem = new MockFileSystem();
             foreach (var item in allFilePathsInSystem)
-                fileSyste.AddFile(item, new MockFileData(new byte[] { 0x12 }));
+                mockFileSystem.AddFile(item, new MockFileData(new byte[] { 0x12 }));
 
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             sut.Begin(workingDirectoryPath, whitelistExtensions);
 
             sut.GetAllFilePaths(workingDirectoryPath)

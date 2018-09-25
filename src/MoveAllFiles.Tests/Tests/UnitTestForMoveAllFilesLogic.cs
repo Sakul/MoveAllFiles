@@ -13,14 +13,15 @@ namespace MoveAllFiles.Tests
         [Fact(DisplayName = "System can list all directory paths.")]
         public void SystemCanListAllDirectoryPathsCorrectly()
         {
-            var fileSyste = new MockFileSystem();
-            fileSyste.AddFile(@"c:\myfile.txt", new MockFileData("Some text."));
-            fileSyste.AddFile(@"c:\a\aQuery.js", new MockFileData("Some jquery"));
-            fileSyste.AddFile(@"c:\a\a1\aQuery.js", new MockFileData("Some jquery"));
-            fileSyste.AddFile(@"c:\b\aQuery.js", new MockFileData("Some jquery"));
-            fileSyste.AddFile(@"c:\b\b1\b12\aQuery.js", new MockFileData("Some jquery"));
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.AddFile(@"c:\myfile.txt", new MockFileData("Some text."));
+            mockFileSystem.AddFile(@"c:\a\aQuery.js", new MockFileData("Some jquery"));
+            mockFileSystem.AddFile(@"c:\a\a1\aQuery.js", new MockFileData("Some jquery"));
+            mockFileSystem.AddFile(@"c:\b\aQuery.js", new MockFileData("Some jquery"));
+            mockFileSystem.AddFile(@"c:\b\b1\b12\aQuery.js", new MockFileData("Some jquery"));
 
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             var actual = sut.GetAllDirectoryPaths(RootDirectoryPath);
             var expectedDirectories = new List<string>
             {
@@ -36,11 +37,12 @@ namespace MoveAllFiles.Tests
         [Fact(DisplayName = "When we move files from a directory, System should delete that directory after that.")]
         public void MoveAllFilesToRootDirectoryAndDeleteAllDirectories()
         {
-            var fileSyste = new MockFileSystem();
-            fileSyste.AddFile(@"c:\a\aQuery.js", new MockFileData("Some jquery"));
-            fileSyste.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.AddFile(@"c:\a\aQuery.js", new MockFileData("Some jquery"));
+            mockFileSystem.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
 
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             sut.RootDirectoryPath = RootDirectoryPath;
             sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\a\");
 
@@ -61,13 +63,14 @@ namespace MoveAllFiles.Tests
         [Fact(DisplayName = "When we move files from a directory with existing file name, System should rename it.")]
         public void MoveAllFilesToRootDirectoryWithExistringFileName()
         {
-            var fileSyste = new MockFileSystem();
-            fileSyste.AddFile(@"c:\aText.txt", new MockFileData("Some text."));
-            fileSyste.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
-            fileSyste.AddFile(@"c:\b\aText.txt", new MockFileData("Some text."));
-            fileSyste.AddFile(@"c:\b\b1\aText.txt", new MockFileData("Some text."));
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.AddFile(@"c:\aText.txt", new MockFileData("Some text."));
+            mockFileSystem.AddFile(@"c:\a\aText.txt", new MockFileData("Some text."));
+            mockFileSystem.AddFile(@"c:\b\aText.txt", new MockFileData("Some text."));
+            mockFileSystem.AddFile(@"c:\b\b1\aText.txt", new MockFileData("Some text."));
 
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             sut.RootDirectoryPath = RootDirectoryPath;
             sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\a\");
             sut.MoveAllFilesToRootDirectoryAndDeleteIt(@"c:\b\b1");
@@ -96,14 +99,15 @@ namespace MoveAllFiles.Tests
         [InlineData(".mp4", ".wmv")]
         public void SystemMoveAllOutOfWhitelistFilesToTempDirectory(params string[] whitelistExtensions)
         {
-            var fileSyste = new MockFileSystem();
-            fileSyste.AddFile(@"c:\firstText.txt", new MockFileData("Some text."));
+            var mockFileSystem = new MockFileSystem();
+            mockFileSystem.AddFile(@"c:\firstText.txt", new MockFileData("Some text."));
             foreach (var extension in whitelistExtensions)
-                fileSyste.AddFile($"c:\\somefile{extension}", new MockFileData(new byte[] { 0x12 }));
+                mockFileSystem.AddFile($"c:\\somefile{extension}", new MockFileData(new byte[] { 0x12 }));
 
-            var allFilePaths = fileSyste.Directory.GetFiles(RootDirectoryPath).ToList();
+            var allFilePaths = mockFileSystem.Directory.GetFiles(RootDirectoryPath).ToList();
 
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             sut.RootDirectoryPath = RootDirectoryPath;
             sut.WhitelistExtensionNames = whitelistExtensions;
             sut.MoveOutOfWhitelistFilesToTempFolder(RootDirectoryPath);
@@ -129,8 +133,9 @@ namespace MoveAllFiles.Tests
         [InlineData(@"c:\download", @"c:\download\")]
         public void ValidateRootDirectory(string rootDirPath, string expectedPath)
         {
-            var fileSyste = new MockFileSystem();
-            var sut = new MoveAllFilesLogic(fileSyste);
+            var mockFileSystem = new MockFileSystem();
+            var testFileSystem = new FileSystemForTesting(mockFileSystem);
+            var sut = new MoveAllFilesLogic(testFileSystem);
             sut.GetRootDirectoryPath(rootDirPath)
                 .Should()
                 .BeEquivalentTo(expectedPath);

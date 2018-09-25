@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{55D1EC50-0DFE-4C3E-AA3E-7064CDCDFF12}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>MoveAllFiles.App</RootNamespace>
+    <RootNamespace>MoveAllFiles</RootNamespace>
     <AssemblyName>MoveAllFiles.App</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -45,18 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="ConsoleLog.cs" />
+    <Compile Include="ILog.cs" />
+    <Compile Include="MoveAllFilesLogic.cs" />
+    <Compile Include="App\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MoveAllFiles\MoveAllFiles.csproj">
-      <Project>{c87582e5-11e1-4496-896a-bc978899c5ec}</Project>
-      <Name>MoveAllFiles</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

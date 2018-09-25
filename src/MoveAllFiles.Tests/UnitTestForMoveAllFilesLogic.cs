@@ -1,5 +1,4 @@
 using FluentAssertions;
-using MoveAllFiles.App;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -122,6 +121,19 @@ namespace MoveAllFiles.Tests
             sut.GetAllFilePaths(tempDirectoryPath)
                 .Should()
                 .BeEquivalentTo(expectedOutOfWhitelistFilePaths, "All out of whitelist files must be here.");
+        }
+
+        [Theory(DisplayName = "System can handle all kind of working directory paths.")]
+        [InlineData(@"c:\", @"c:\")]
+        [InlineData(@"c:\download\", @"c:\download\")]
+        [InlineData(@"c:\download", @"c:\download\")]
+        public void ValidateRootDirectory(string rootDirPath, string expectedPath)
+        {
+            var fileSyste = new MockFileSystem();
+            var sut = new MoveAllFilesLogic(fileSyste);
+            sut.GetRootDirectoryPath(rootDirPath)
+                .Should()
+                .BeEquivalentTo(expectedPath);
         }
     }
 }

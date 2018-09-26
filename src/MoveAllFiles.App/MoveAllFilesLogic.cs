@@ -12,15 +12,20 @@ namespace MoveAllFiles
         #region Fields
 
         private int _runningNo;
-        private readonly IFileSystem _fileSystem;
         private readonly ILog _log;
+        private readonly IFileSystem _fileSystem;
+        private IEnumerable<string> _whitelistExtensionNames;
 
         #endregion Fields
 
         #region Properties
 
         public string RootDirectoryPath { get; internal set; }
-        public IEnumerable<string> WhitelistExtensionNames { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> WhitelistExtensionNames
+        {
+            get => _whitelistExtensionNames;
+            set => _whitelistExtensionNames = value?.Select(it => it.ToLower()) ?? Enumerable.Empty<string>();
+        }
 
         #endregion Properties
 
@@ -82,7 +87,7 @@ namespace MoveAllFiles
             var allFilePathQry = _fileSystem.GetFiles(directoryPath)
                 .Select(it => new { _fileSystem.GetFileInfo(it).Extension, Path = it });
             var outOfListFilePathQry = allFilePathQry.Where(it => !string.IsNullOrEmpty(it.Extension))
-                .Where(it => !WhitelistExtensionNames.Contains(it.Extension));
+                .Where(it => !_whitelistExtensionNames.Contains(it.Extension.ToLower()));
             var unknowExtensionFilePathQry = allFilePathQry.Where(it => string.IsNullOrEmpty(it.Extension));
 
             const string TempDirectoryName = "temp";
@@ -93,21 +98,17 @@ namespace MoveAllFiles
                 .ToList()
                 .ForEach(it => moveFile(it.Path, tempDirectoryPath));
             writeLog($" -> DONE");
-            writeLog($"------------------------------");
         }
 
         private void moveFile(string srcPath, string descPath)
         {
             var fileInfo = _fileSystem.GetFileInfo(srcPath);
-            writeLog($" - moving file '{fileInfo.Name}'");
             var destinationPath = $"{descPath}{fileInfo.Name}";
             var isFileExisting = _fileSystem.IsFileExists(destinationPath);
-            if (isFileExisting) destinationPath = $"{descPath}{createNewFileName(fileInfo.Name, fileInfo.Extension)}";
+            if (isFileExisting)
+                destinationPath = $"{descPath}{Path.GetFileNameWithoutExtension(fileInfo.Name)}{string.Format("{0:00}", ++_runningNo)}{fileInfo.Extension}";
             _fileSystem.MoveFile(srcPath, destinationPath);
         }
-
-        private string createNewFileName(string fullName, string extensionName)
-            => $"{Path.GetFileNameWithoutExtension(fullName)}{string.Format("{0:00}", ++_runningNo)}{extensionName}";
 
         private void writeLog(string message)
             => _log?.WriteLog(message);

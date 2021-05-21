@@ -19,7 +19,8 @@ namespace MoveAllFiles.App
                 ".mxf", ".nsv", ".ogg", ".ogv",
                 ".qt", ".rm", ".rmvb", ".roq",
                 ".svi", ".vob", ".webm", ".wmv",
-                ".yuv"
+                ".yuv",
+                ".ts",
             });
         }
     }

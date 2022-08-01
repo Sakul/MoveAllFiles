@@ -106,7 +106,7 @@ namespace MoveAllFiles
             var destinationPath = $"{descPath}{fileInfo.Name}";
             var isFileExisting = _fileSystem.IsFileExists(destinationPath);
             if (isFileExisting)
-                destinationPath = $"{descPath}{Path.GetFileNameWithoutExtension(fileInfo.Name)}{string.Format("{0:00}", ++_runningNo)}{fileInfo.Extension}";
+                destinationPath = $"{descPath}_DUPLICATED_{Path.GetFileNameWithoutExtension(fileInfo.Name)}{string.Format("{0:00}", ++_runningNo)}{fileInfo.Extension}";
             _fileSystem.MoveFile(srcPath, destinationPath);
         }
 
